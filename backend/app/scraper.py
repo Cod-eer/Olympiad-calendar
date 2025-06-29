@@ -101,6 +101,3 @@ def get_data_from_website(url):
         "organizers" : organizers,
     }
 
-url = input()
-
-get_data_from_website(url)
