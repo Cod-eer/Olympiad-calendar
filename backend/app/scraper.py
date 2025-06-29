@@ -1,6 +1,7 @@
 import os
 import re
 from openai import OpenAI
+from dotenv import load_dotenv
 import requests
 
 def transform(url):
@@ -20,8 +21,9 @@ def get_data_from_website(url):
     text = soup.get_text()
 
 
+    load_dotenv()
     # Initialize openAI model
-    token = "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"
+    token = os.environ["GITHUB_KEY"]
     endpoint = "https://models.github.ai/inference"
     model = "openai/gpt-4.1-mini"
 
@@ -99,4 +101,6 @@ def get_data_from_website(url):
         "organizers" : organizers,
     }
 
+url = input()
 
+get_data_from_website(url)
