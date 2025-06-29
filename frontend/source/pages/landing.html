@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Olympiad Parser</title>
+  <link rel="stylesheet" href="static/style.css">
+</head>
+<body>
+  <h1>🏆 Olympiad Info Extractor</h1>
+  <form method="POST">
+    <input type="text" name="url" placeholder="Enter Olympiad URL" required>
+    <button type="submit">Parse</button>
+  </form>
+
+  {% if data %}
+    {% if data.error %}
+      <p style="color:red;">Error: {{ data.error }}</p>
+    {% else %}
+      <div class="box"><h2>📅 Dates</h2><ul>{% for d in data.dates %}<li>{{ d }}</li>{% endfor %}</ul></div>
+      <div class="box"><h2>💳 Billing</h2><ul>{% for b in data.billing %}<li>{{ b }}</li>{% endfor %}</ul></div>
+      <div class="box"><h2>📋 Requirements</h2><ul>{% for r in data.requirements %}<li>{{ r }}</li>{% endfor %}</ul></div>
+      <div class="box"><h2>🏅 Rewards</h2><ul>{% for w in data.rewards %}<li>{{ w }}</li>{% endfor %}</ul></div>
+    {% endif %}
+  {% endif %}
+</body>
+</html>
