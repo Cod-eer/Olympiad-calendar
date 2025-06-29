@@ -3,6 +3,16 @@ import re
 from openai import OpenAI
 from dotenv import load_dotenv
 import requests
+from flask import Flask, render_template, jsonify
+from flask_cors import CORS
+
+app = Flask(__name__)
+CORS(app)
+
+
+@app.route("/parse-data", methods=["GET", "POST"])
+
+
 
 def transform(url):
     if url[0] != 'h':
@@ -10,8 +20,13 @@ def transform(url):
     return url
 
 
-def get_data_from_website(url):
-    # 1. Fetch website content
+def get_data_from_website():
+    # 0. get the url via POST
+    if request.method == "POST":
+        url = request.form["url"]
+    
+    
+    # 1. transform website content
     url = transform(url)
     html = requests.get(url).text
 
