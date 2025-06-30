@@ -121,7 +121,4 @@ def scrape_return_dict(url: str, token: str):
     }
     return result
 
-
-#pprint(parse_data("https://www.johnlockeinstitute.com/essay-competition", "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"))
-
 driver.quit()
