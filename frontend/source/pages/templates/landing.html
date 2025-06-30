@@ -9,69 +9,79 @@
   </head>
   <body>
     <h1>🏆 Olympiad Info Extractor</h1>
-    <form method="POST" , action="/parse-data">
+    <form id="urlForm" method="POST" action="/parse_data">
       <input
         type="text"
         name="url"
-        id="enter_url"
+        id="url_bar"
         placeholder="Enter Olympiad URL"
         required
       />
-      <button type="submit" id="transfer-data" onclick="parse_input()">
+      <button type="submit" id="transfer-data" onclick="sendUrl()">
         Parse
       </button>
     </form>
     <script>
-      function parse_input() {
-        const inputElement = document.getElementById("enter_url").value;
-        fetch("/parse", {
+      async function sendUrl() {
+        const url = document.getElementById("url_bar").value;
+
+        const response = await fetch("/parse_data", {
           method: "POST",
           headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
           },
-          body: JSON.stringify({ url: url })
+          body: JSON.stringify({ url: url }),
         })
-        .then(response => response.json())
-        .then(data => {
-          console.log("Response from Flask:", data);
-        });
+          .then((res) => res.json())
+          .then((data) => {
+            document.getElementById("date_list").innerHTML = "";
+            document.getElementById("bill_list").innerHTML = "";
+            document.getElementById("req_list").innerHTML = "";
+            document.getElementById("reward_list").innerHTML = "";
+            document.getElementById("org_list").innerHTML = "";
+
+            document.getElementById("date_list").innerHTML = data.dates
+              .map((item) => `<li>${item}</li>`)
+              .join("");
+
+            document.getElementById("bill_list").innerHTML = data.billing
+              .map((item) => `<li>${item}</li>`)
+              .join("");
+
+            document.getElementById("req_list").innerHTML = data.requirements
+              .map((item) => `<li>${item}</li>`)
+              .join("");
+
+            document.getElementById("reward_list").innerHTML = data.rewards
+              .map((item) => `<li>${item}</li>`)
+              .join("");
+
+            document.getElementById("org_list").innerHTML = data.organizers
+              .map((item) => `<li>${item}</li>`)
+              .join("");
+          })
+          .catch((error) => console.error("Error:", error));
       }
     </script>
-    {% if data %} {% if data.error %}
-    <p style="color: red">Error: {{ data.error }}</p>
-    {% else %}
     <div class="box">
       <h2>📅 Dates</h2>
-      <ul>
-        {% for d in data.dates %}
-        <li>{{ d }}</li>
-        {% endfor %}
-      </ul>
+      <ul id="date_list"></ul>
     </div>
     <div class="box">
       <h2>💳 Billing</h2>
-      <ul>
-        {% for b in data.billing %}
-        <li>{{ b }}</li>
-        {% endfor %}
-      </ul>
+      <ul id="bill_list"></ul>
     </div>
     <div class="box">
       <h2>📋 Requirements</h2>
-      <ul>
-        {% for r in data.requirements %}
-        <li>{{ r }}</li>
-        {% endfor %}
-      </ul>
+      <ul id="req_list"></ul>
+    </div>
+    <div class="box">
+      <h2>👥 Organizers</h2>
+      <ul id="org_list"></ul>
     </div>
     <div class="box">
       <h2>🏅 Rewards</h2>
-      <ul>
-        {% for w in data.rewards %}
-        <li>{{ w }}</li>
-        {% endfor %}
-      </ul>
+      <ul id="reward_list"></ul>
     </div>
-    {% endif %} {% endif %}
   </body>
 </html>

@@ -1,52 +1,80 @@
 import os
 import re
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 from openai import OpenAI
+from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 import requests
-from flask import Flask, render_template, jsonify
-from flask_cors import CORS
+from pprint import pprint
 
-app = Flask(__name__)
-CORS(app)
-
-
-@app.route("/parse-data", methods=["GET", "POST"])
+options = Options()
+options.headless = True
+driver = webdriver.Chrome(options=options)
 
 
 
-def transform(url):
-    if url[0] != 'h':
+
+def transform_url(url: str) -> str:
+    if not url.startswith("http"):
         url = "https://www." + url
     return url
 
 
-def get_data_from_website():
-    # 0. get the url via POST
-    if request.method == "POST":
-        url = request.form["url"]
-    
-    
-    # 1. transform website content
-    url = transform(url)
-    html = requests.get(url).text
+def parse_sections(raw_text: str):
 
+    split_sections = re.split(r'\n\d+\.\s+(.*?)\n', raw_text)
+
+    parsed = {}
+    for i in range(1, len(split_sections), 2):
+        title = split_sections[i].strip().lower()
+        content = split_sections[i + 1].strip()
+        lines = [line.rstrip() for line in content.split('\n') if line.strip()]
+
+        # We'll parse lines to detect main lines and nested subitems (indented by 2 or more spaces)
+        section_items = []
+        current_main = None
+
+        for line in lines:
+            if re.match(r"^\s{2,}[-*]\s+", line):  # indented bullet line
+                if current_main is not None:
+                    # append nested item to current main's sublist
+                    nested_item = re.sub(r"^\s*[-*]\s+", "", line)
+                    if isinstance(current_main, dict):
+                        current_main["subitems"].append(nested_item)
+                    else:
+                        # convert previous string item to dict with subitems
+                        current_main = {"main": current_main, "subitems": [nested_item]}
+                        section_items[-1] = current_main
+                else:
+                    # nested item without main? just add as is
+                    section_items.append(line.strip())
+            elif re.match(r"^[-*]\s+", line):  # main bullet line
+                main_item = re.sub(r"^[-*]\s+", "", line)
+                section_items.append(main_item)
+                current_main = main_item
+            else:
+                # line without bullet, treat as continuation or a new item
+                section_items.append(line.strip())
+                current_main = None
+
+        parsed[title] = section_items
+    return parsed
+
+
+def scrape_return_dict(url: str, token: str):
+    url = transform_url(url)
+    driver.get(url)
+    html = driver.page_source
     # Optional: Clean it using BeautifulSoup
-    from bs4 import BeautifulSoup
     soup = BeautifulSoup(html, "html.parser")
     text = soup.get_text()
-
-
-    load_dotenv()
-    # Initialize openAI model
-    token = os.environ["GITHUB_KEY"]
     endpoint = "https://models.github.ai/inference"
     model = "openai/gpt-4.1-mini"
-
     client = OpenAI(
         base_url=endpoint,
         api_key=token,
     )
-
     system_msg = {
         "role": "system",
         "content": (
@@ -58,10 +86,10 @@ def get_data_from_website():
             "4. **ORGANIZERS** and partners of the olympiad, or hosting institutions\n"
             "5. **REWARDS FOR WINNERS** (e.g. cash prizes, scholarships, publication opportunities, certificates)\n\n"
             "Respond in clearly separated sections. If any section is not mentioned in the input, say: 'Not specified'. "
+            "Use this format of your answer: (number of question). (exact name of the category you are answering): then list all details of current category, each category in a separate line, starting each detail with - and a whitespace"
             "Use concise and clean formatting. Do not invent or infer details beyond the text."
-        )
+        ),
     }
-
     user_msg = {
         "role": "user",
         "content": (
@@ -73,46 +101,27 @@ def get_data_from_website():
             "3. Participation requirements\n"
             "4. Organizers and partners of the olympiad, or hosting institutions\n"
             "5. Rewards for winners"
-        )
+        ),
     }
-
-
-    #chat request
-
+    # chat request
     response = client.chat.completions.create(
         messages=[system_msg, user_msg],
-        temperature=0.5,
+        temperature=0.2,
         model=model,
     )
     extracted_data = response.choices[0].message.content
-
-
-    def parse_sections(raw_text):
-        # Split sections using markdown headings like **1. TITLE**
-        split_sections = re.split(r"\*\*\d+\.\s+(.+?)\*\*", raw_text)
-
-        # Create dictionary
-        parsed = {}
-        for i in range(1, len(split_sections), 2):
-            title = split_sections[i].strip().lower()  # normalize key
-            content = split_sections[i + 1].strip()
-            items = re.findall(r"- (.+)", content)
-            parsed[title] = items
-        return parsed
-
-    # Example usage
+    extracted_data = "\n" + extracted_data
     parsed = parse_sections(extracted_data)
-
-    # Access with normalized keys
-    dates = parsed.get("important dates", [])
-    billing = parsed.get("billing or entry fees", [])
-    requirements = parsed.get("participation requirements", [])
-    organizers = parsed.get("organizers or hosting institutions", [])
-    rewards = parsed.get("rewards for winners", [])
-    return {
-        "dates" : dates,
-        "billing" : billing,
-        "requirements" : requirements,
-        "organizers" : organizers,
+    result = {
+        "dates": parsed.get("all important dates:", []),
+        "billing": parsed.get("billing or entry fees:", []),
+        "requirements": parsed.get("participation requirements:", []),
+        "organizers": parsed.get("organizers and partners of the olympiad, or hosting institutions:", []),
+        "rewards": parsed.get("rewards for winners:", []),
     }
+    return result
 
+
+#pprint(parse_data("https://www.johnlockeinstitute.com/essay-competition", "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"))
+
+driver.quit()
