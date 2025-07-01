@@ -16,29 +16,18 @@ app = Flask(
 )
 
 app.config["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
-@app.route("/", methods=["GET"])
+@app.route("/", methods=["GET", "POST"])
 def index():
-    data = {"error": None, "message": "Hello from Flask!"}
-    return render_template("landing.html", data=data)
-
-@app.route("/parse_data", methods=["POST"])
-def parse_data():
-    print("Content-Type:", type(request))
-    print("Raw data:", request.data)  # raw bytes of body
-    data = request.get_json(silent=True)
-    #url = data.get("url", "")
-    #try:
-    #    result = scraper.scrape_return_dict(url, app.config["OPENAI_API_KEY"])
-    #    return jsonify(result)
-    #except Exception as e:
-    #    return jsonify({"error": str(e)})
-
-if __name__ == "__main__":
-    app.run(debug=True)
-
-
-
-
+    if request.method == "POST":
+        data = request.get_json()
+        url = data.get("url", "")
+        try:
+            result = scraper.scrape_return_dict(url, app.config["OPENAI_API_KEY"])
+            return jsonify(result)
+        except Exception as e:
+            return jsonify({"error": str(e)})
+    else:
+        return render_template("landing.html")
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000, host="127.0.0.1")
