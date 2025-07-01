@@ -8,10 +8,6 @@ from dotenv import load_dotenv
 import requests
 from pprint import pprint
 
-options = Options()
-options.headless = True
-driver = webdriver.Chrome(options=options)
-
 
 
 
@@ -22,7 +18,7 @@ def transform_url(url: str) -> str:
 
 
 def parse_sections(raw_text: str):
-
+    
     split_sections = re.split(r'\n\d+\.\s+(.*?)\n', raw_text)
 
     parsed = {}
@@ -63,6 +59,9 @@ def parse_sections(raw_text: str):
 
 
 def scrape_return_dict(url: str, token: str):
+    options = Options()
+    options.headless = True
+    driver = webdriver.Chrome(options=options)
     url = transform_url(url)
     driver.get(url)
     html = driver.page_source
@@ -119,6 +118,6 @@ def scrape_return_dict(url: str, token: str):
         "organizers": parsed.get("organizers and partners of the olympiad, or hosting institutions:", []),
         "rewards": parsed.get("rewards for winners:", []),
     }
+    driver.quit()
     return result
 
-driver.quit()

@@ -9,60 +9,16 @@
   </head>
   <body>
     <h1>🏆 Olympiad Info Extractor</h1>
-    <form id="urlForm" method="POST" action="/parse_data">
+    <form id="urlForm">
       <input
         type="text"
-        name="url"
         id="url_bar"
+        name="url"
         placeholder="Enter Olympiad URL"
-        required
       />
-      <button type="submit" id="transfer-data" onclick="sendUrl()">
-        Parse
-      </button>
+      <button type="submit" id="transfer-data">Parse</button>
     </form>
-    <script>
-      async function sendUrl() {
-        const url = document.getElementById("url_bar").value;
 
-        const response = await fetch("/parse_data", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ url: url }),
-        })
-          .then((res) => res.json())
-          .then((data) => {
-            document.getElementById("date_list").innerHTML = "";
-            document.getElementById("bill_list").innerHTML = "";
-            document.getElementById("req_list").innerHTML = "";
-            document.getElementById("reward_list").innerHTML = "";
-            document.getElementById("org_list").innerHTML = "";
-
-            document.getElementById("date_list").innerHTML = data.dates
-              .map((item) => `<li>${item}</li>`)
-              .join("");
-
-            document.getElementById("bill_list").innerHTML = data.billing
-              .map((item) => `<li>${item}</li>`)
-              .join("");
-
-            document.getElementById("req_list").innerHTML = data.requirements
-              .map((item) => `<li>${item}</li>`)
-              .join("");
-
-            document.getElementById("reward_list").innerHTML = data.rewards
-              .map((item) => `<li>${item}</li>`)
-              .join("");
-
-            document.getElementById("org_list").innerHTML = data.organizers
-              .map((item) => `<li>${item}</li>`)
-              .join("");
-          })
-          .catch((error) => console.error("Error:", error));
-      }
-    </script>
     <div class="box">
       <h2>📅 Dates</h2>
       <ul id="date_list"></ul>
@@ -83,5 +39,50 @@
       <h2>🏅 Rewards</h2>
       <ul id="reward_list"></ul>
     </div>
+
+    <script>
+      async function sendUrl() {
+        event.preventDefault();
+
+        const url_input = document.getElementById("url_bar").value;
+
+        const response = await fetch("/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ url: url_input }),
+        });
+
+        const data = await response.json();
+        if (data.error) {
+          console.error(data.error);
+          return;
+        }
+
+        function buildList(items) {
+          if (!items || items.length === 0) return `<p>Not specified</p>`;
+          const list = items.map((item) => `<li>${item}</li>`).join("");
+          return `<ul>${list}</ul>`;
+        }
+
+        document.getElementById("date_list").innerHTML = buildList(data.dates);
+        document.getElementById("bill_list").innerHTML = buildList(
+          data.billing
+        );
+        document.getElementById("req_list").innerHTML = buildList(
+          data.requirements
+        );
+        document.getElementById("reward_list").innerHTML = buildList(
+          data.rewards
+        );
+        document.getElementById("org_list").innerHTML = buildList(
+          data.organizers
+        );
+      }
+    </script>
+    <script>
+      document.getElementById("urlForm").addEventListener("submit", sendUrl);
+    </script>
   </body>
 </html>
