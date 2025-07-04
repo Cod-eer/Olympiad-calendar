@@ -62,7 +62,19 @@
 
         function buildList(items) {
           if (!items || items.length === 0) return `<p>Not specified</p>`;
-          const list = items.map((item) => `<li>${item}</li>`).join("");
+          let list = "";
+          for (let i = 0; i < items.length; i++) {
+            if (typeof items[i] === "string") {
+              list += `<li>${items[i]}</li>`;
+            } else {
+              list += `<li>${items[i]["main"]}</li>`;
+              let nested = "";
+              for (const n of items[i]["subitems"]) {
+                nested += `<li>${n}</li>`;
+              }
+              list += `<ul>${nested}</ul>`;
+            }
+          }
           return `<ul>${list}</ul>`;
         }
 

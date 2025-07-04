@@ -2,10 +2,12 @@ import os
 import re
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from playwright.sync_api import sync_playwright
 from openai import OpenAI
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 import requests
+import time
 from pprint import pprint
 
 
@@ -64,10 +66,12 @@ def scrape_return_dict(url: str, token: str):
     driver = webdriver.Chrome(options=options)
     url = transform_url(url)
     driver.get(url)
+    time.sleep(3)
     html = driver.page_source
     # Optional: Clean it using BeautifulSoup
     soup = BeautifulSoup(html, "html.parser")
-    text = soup.get_text()
+    raw_text = soup.get_text()
+    text = re.sub(r'[\u200b]', '', raw_text).strip()
     endpoint = "https://models.github.ai/inference"
     model = "openai/gpt-4.1-mini"
     client = OpenAI(
@@ -79,8 +83,8 @@ def scrape_return_dict(url: str, token: str):
         "content": (
             "You are an intelligent extraction assistant designed to analyze and summarize academic competition webpages. "
             "Your task is to identify and return the following categories from the given text:\n\n"
-            "1. All important **DATES** (e.g. registration deadlines, submission dates, awards ceremonies)\n"
-            "2. Any **BILLING or entry fees**\n"
+            "1. **DATES** (e.g. registration deadlines, submission dates, awards ceremonies)\n"
+            "2. **BILLING or entry fees**\n"
             "3. **PARTICIPATION REQUIREMENTS** (e.g. age, grade level, citizenship, educational background)\n"
             "4. **ORGANIZERS** and partners of the olympiad, or hosting institutions\n"
             "5. **REWARDS FOR WINNERS** (e.g. cash prizes, scholarships, publication opportunities, certificates)\n\n"
@@ -105,14 +109,14 @@ def scrape_return_dict(url: str, token: str):
     # chat request
     response = client.chat.completions.create(
         messages=[system_msg, user_msg],
-        temperature=0.2,
+        temperature=0.5,
         model=model,
     )
     extracted_data = response.choices[0].message.content
     extracted_data = "\n" + extracted_data
     parsed = parse_sections(extracted_data)
     result = {
-        "dates": parsed.get("all important dates:", []),
+        "dates": parsed.get("dates:", []),
         "billing": parsed.get("billing or entry fees:", []),
         "requirements": parsed.get("participation requirements:", []),
         "organizers": parsed.get("organizers and partners of the olympiad, or hosting institutions:", []),
