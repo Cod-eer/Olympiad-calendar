@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Olympiad Parser</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+  </head>
+  <body>
+    <h1>🏆 Olympiad Info Extractor</h1>
+    <form id="urlForm">
+      <input
+        type="text"
+        id="url_bar"
+        name="url"
+        placeholder="Enter Olympiad URL"
+      />
+      <button type="submit" id="transfer-data">Parse</button>
+    </form>
+
+    <script>
+      async function get_data(event) {
+        event.preventDefault();
+        const url_input = document.getElementById("url_bar").value;
+        console.log("got url")
+        const response = await fetch("/parse", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ url: url_input }),
+        });
+        const data = await response.json();
+        console.log("Fetched data:", data);
+        if (data.error) {
+          console.error(data.error);
+          return;
+        }
+        sessionStorage.setItem("parsedData", JSON.stringify(data));
+        window.location.href = "/results";
+      }
+    </script>
+    <script>
+      document.getElementById("urlForm").addEventListener("submit", get_data);
+    </script>
+    <h2></h2>
+    <table border="1">
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Date</th>
+          <th>Event</th>
+          <th>URL</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for event in events %}
+          <tr>
+            <td>{{ event.title }}</td>
+            <td>{{ event.date }}</td>
+            <td>{{ event.action }}</td>
+            <td><a href="{{ event.url }}">Link</a></td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="3">No events saved yet.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+  </body>
+</html>

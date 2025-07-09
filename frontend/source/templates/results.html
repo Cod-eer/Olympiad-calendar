@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Olympiad Parser</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+  </head>
+
+  <body>
+    <div class="name-button">
+      <h4 id="name-box"></h4>
+      <h5 id="name-url"></h5>
+      <button type="button" id="add_event">Add Event</button>
+    </div>
+
+    <div class="box">
+      <h2>📅 Dates</h2>
+      <ul id="date_list"></ul>
+    </div>
+    <div class="box">
+      <h2>💳 Billing</h2>
+      <ul id="bill_list"></ul>
+    </div>
+    <div class="box">
+      <h2>📋 Requirements</h2>
+      <ul id="req_list"></ul>
+    </div>
+    <div class="box">
+      <h2>👥 Organizers</h2>
+      <ul id="org_list"></ul>
+    </div>
+    <div class="box">
+      <h2>🏅 Rewards</h2>
+      <ul id="reward_list"></ul>
+    </div>
+
+    <script>
+      function buildList(items) {
+        if (!items || items.length === 0) return `<p>Not specified</p>`;
+        let list = "";
+        for (let i = 0; i < items.length; i++) {
+          if (typeof items[i] === "string") {
+            list += `<li>${items[i]}</li>`;
+          } else {
+            list += `<li>${items[i]["main"]}</li>`;
+            let nested = "";
+            for (const n of items[i]["subitems"]) {
+              nested += `<li>${n}</li>`;
+            }
+            list += `<ul>${nested}</ul>`;
+          }
+        }
+        return `<ul>${list}</ul>`;
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        const data = JSON.parse(sessionStorage.getItem("parsedData"));
+        if (!data) {
+          document.body.innerHTML = "<p>Error loading data. Please try again.</p>";
+          return;
+        }
+        document.getElementById("name-box").innerHTML = data.name[0];
+        document.getElementById("name-url").innerHTML = data.url;
+        document.getElementById("date_list").innerHTML = buildList(data.dates);
+        document.getElementById("bill_list").innerHTML = buildList(data.billing);
+        document.getElementById("req_list").innerHTML = buildList(data.requirements);
+        document.getElementById("reward_list").innerHTML = buildList(data.rewards);
+        document.getElementById("org_list").innerHTML = buildList(data.organizers);
+
+
+        document.getElementById("add_event").addEventListener("click", async () => {
+          const response = await fetch("/add_event", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+          });
+
+          const result = await response.json();
+          if (result.success) {
+            alert("Event added successfully!");
+            window.location.href = "/";
+          } else {
+            alert("Failed to add event.");
+            console.error(result.error);
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

@@ -1,6 +1,10 @@
 /* Global Styles */
+
+* {
+  font-family: system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+}
+
 body {
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   background-color: #f0f0f0;
   color: #333;
   margin: 0;
@@ -75,7 +79,6 @@ ul {
 }
 
 li {
-  font-family:'Lucida Sans';
   font-size: 1rem;
   color: #373333;
   margin-bottom: 6px;
@@ -91,4 +94,36 @@ li {
   form {
     flex-direction: column;
   }
+}
+
+
+.name-button {
+  background-color: white;
+  border-left: 6px solid #001f3f;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin: 20px auto;
+  max-width: 800px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px; /* space between input and button */
+}
+
+.name-button h4 {
+  padding: 8px;
+  font-size: 1rem;
+  flex: 1; /* make the input stretch */
+}
+
+.name-button h5 {
+  padding: 8px;
+  font-size: 0.8rem;
+  flex: 1;
+}
+
+.name-button button {
+  padding: 8px 16px;
+  font-size: 1rem;
+  cursor: pointer;
 }
