@@ -57,7 +57,8 @@ def parse():
         result = scrape_return_dict(url, app.config["OPENAI_API_KEY"])
         return jsonify(result)
     except Exception as e:
-        return jsonify({"error": str(e)})
+        app.logger.error("An error occurred during parsing: %s", str(e))
+        return jsonify({"error": "An internal error occurred"})
 
 
 @app.route("/results")
@@ -93,7 +94,8 @@ def add_event():
 
         return jsonify({"success": True})
     except Exception as e:
-        return jsonify({"success": False, "error": str(e)})
+        app.logger.error("An error occurred while adding an event: %s", str(e))
+        return jsonify({"success": False, "error": "An internal error occurred"})
 #ADD a datetime transformation
 
 if __name__ == "__main__":
