@@ -85,7 +85,7 @@ li {
   line-height: 1.4;
 }
 
-/* Responsive tweak */
+
 @media (max-width: 600px) {
   input[type="text"] {
     width: 90%;
@@ -106,6 +106,7 @@ li {
   max-width: 800px;
   padding: 20px;
   display: flex;
+  align-self: center;
   align-items: center;
   gap: 10px; /* space between input and button */
 }
@@ -127,3 +128,77 @@ li {
   font-size: 1rem;
   cursor: pointer;
 }
+
+.table-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+}
+
+#olymp-title {
+  text-align: center;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #343a40;
+  margin-top: 20px;
+  margin-bottom: 30px;
+  position: relative;
+}
+
+#olymp-title::after {
+  content: "";
+  display: block;
+  width: 80px;
+  height: 4px;
+  background-color: #007bff;
+  margin: 12px auto 0;
+  border-radius: 2px;
+}
+
+.table-calendar {
+  border-collapse: collapse;
+  width: 90%;
+  max-width: 900px;
+  background-color: white;
+  box-shadow: 0 6px 16px rgba(21, 74, 118, 0.5);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.table-calendar th,
+.table-calendar td {
+  border: 1px solid #dee2e6;
+  padding: 14px 16px;
+  text-align: left;
+}
+
+.table-calendar thead {
+  background-color: #001f3f;
+  color: white;
+}
+
+.table-calendar tbody tr:nth-child(even) {
+  background-color: #f1f3f5;
+}
+
+.table-calendar tbody tr:hover {
+  background-color: #e9ecef;
+  transition: background-color 0.2s ease;
+}
+
+.table-calendar a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+.table-calendar a:hover {
+  text-decoration: underline;
+}
+
+td[colspan="3"] {
+  text-align: center;
+  font-style: italic;
+  color: #6c757d;
+}
+  

@@ -44,7 +44,11 @@ def parse_sections(raw_text: str):
 
 def scrape_return_dict(url: str, token: str):
     options = Options()
-    options.headless = True
+    options.add_argument("--headless=new")  # Old headless mode (compatible)
+    options.add_argument("--disable-gpu")  # Needed for some systems
+    options.add_argument("--no-sandbox")  # For Linux servers
+    options.add_argument("--window-size=1920,1080")  # Optional: set window size
+
     driver = webdriver.Chrome(options=options)
     url = transform_url(url)
     driver.get(url)
@@ -75,7 +79,7 @@ Your task is to extract and return the following categories from the provided te
 - Return each as: dd-mm-yyyy – event description.
 - If the date is in a different format, convert it to dd-mm-yyyy. If only a month/year is available, use 01 for the day.
 
-3. **BILLING or ENTRY FEES**
+3. **BILLING OR ENTRY FEES**
 - Include any mention of costs, registration fees, or if participation is free.
 
 4. **PARTICIPATION REQUIREMENTS**
@@ -83,6 +87,7 @@ Your task is to extract and return the following categories from the provided te
 
 5. **ORGANIZERS**
 - Include any organizing bodies, institutional partners, sponsors, or hosts.
+- Write down only the names of organizations.
 
 6. **REWARDS FOR WINNERS**
 - Include scholarships, cash prizes, certificates, publications, internships, or other awards.
@@ -97,6 +102,8 @@ If an item has subitems, shift them with a tab:
 - item 1
     - item 1.1
     - item 1.2
+
+ANSWER ONLY IN ENGLISH.
 
 If any section is not mentioned in the text, respond with:
 Not specified
@@ -138,8 +145,5 @@ Use concise and factual formatting. Do not invent or infer details not clearly s
         "url": url,
     }
     driver.quit()
-    return extracted_data
-
-
-
+    return result
 
