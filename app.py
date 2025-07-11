@@ -99,4 +99,4 @@ def add_event():
 #ADD a datetime transformation
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5050, host="127.0.0.1")
+    app.run(debug=FALSE, port=5000, host="127.0.0.1")
